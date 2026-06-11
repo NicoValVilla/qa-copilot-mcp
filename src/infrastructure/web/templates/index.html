@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QA Copilot MCP</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <aside class="panel form-panel">
+          <div class="brand">
+            <span class="brand-mark">QA</span>
+            <div>
+              <h1>QA Copilot MCP</h1>
+              <p>Jira -> MCP Client -> MCP Server -> QA Tools</p>
+            </div>
+          </div>
+
+          <form id="ticket-form" class="ticket-form">
+            <label>
+              Título Jira
+              <input id="titulo" name="titulo" type="text" value="Agregar autenticación con Google" required />
+            </label>
+
+            <label>
+              Descripción Jira
+              <textarea id="descripcion" name="descripcion" rows="7" required>Los usuarios deben poder iniciar sesión usando OAuth2 con Google.</textarea>
+            </label>
+
+            <label>
+              Tipo
+              <select id="tipo" name="tipo">
+                <option>Story</option>
+                <option>Bug</option>
+                <option>Task</option>
+                <option>Epic</option>
+              </select>
+            </label>
+          </form>
+        </aside>
+
+        <section class="dashboard">
+          <header class="dashboard-header">
+            <div>
+              <span class="eyebrow">Dashboard QA</span>
+              <h2>Artefactos generados por tools MCP</h2>
+            </div>
+            <span id="status" class="status">Listo</span>
+          </header>
+
+          <div class="actions">
+            <button data-endpoint="/testing" data-title="Casos de prueba">Generar Casos de Prueba</button>
+            <button data-endpoint="/criteria" data-title="Criterios de aceptación">Generar Criterios</button>
+            <button data-endpoint="/risks" data-title="Riesgos QA">Analizar Riesgos</button>
+            <button data-endpoint="/effort" data-title="Estimación QA">Estimar QA</button>
+          </div>
+
+          <div id="results" class="results-grid">
+            <article class="result-card empty">
+              <h3>Resultado</h3>
+              <p>Selecciona una tool MCP para analizar el ticket Jira.</p>
+            </article>
+          </div>
+        </section>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

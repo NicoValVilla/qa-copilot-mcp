@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA Copilot MCP - Presentación</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/black.min.css">
+    <style>
+        .reveal h1, .reveal h2, .reveal h3 { text-transform: none; }
+        .reveal pre { width: 100%; }
+        .reveal code { padding: 2px 6px; background: rgba(255,255,255,0.1); }
+        .reveal section { text-align: left; }
+        .reveal h1 { font-size: 2.8em; }
+        .reveal h2 { font-size: 2em; }
+        .reveal h3 { font-size: 1.4em; }
+        .reveal ul { width: 100%; }
+        .reveal li { margin: 10px 0; }
+        .container-flex { display: flex; gap: 20px; align-items: center; }
+        .container-flex div { flex: 1; }
+        .highlight-box { background: rgba(100, 200, 255, 0.2); padding: 20px; border-radius: 5px; }
+        .success { color: #42ff42; }
+        .warning { color: #ffaa00; }
+        .error { color: #ff4444; }
+        .center-text { text-align: center; }
+        .title-slide { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .small-text { font-size: 0.8em; }
+        .slide-number { display: none; }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- PORTADA -->
+            <section class="title-slide">
+                <h1>🚀 QA Copilot MCP</h1>
+                <h3>Model Context Protocol & Arquitectura Hexagonal</h3>
+                <p style="margin-top: 40px; font-size: 1.2em;">Ingeniería de Software II</p>
+                <p style="margin-top: 60px; font-size: 0.9em; color: #ddd;">
+                    Trabajo Extraclase - Junio 2026
+                </p>
+            </section>
+
+            <!-- 1. CONTEXTUALIZACIÓN DEL PROBLEMA -->
+            <section>
+                <h2>1️⃣ El Problema</h2>
+                <ul>
+                    <li><strong>¿Cómo integran los LLMs herramientas externas?</strong></li>
+                    <li>APIs personalizadas = Cada servicio define su propio estándar</li>
+                    <li>Sin estandarización = Código frágil, difícil de mantener</li>
+                    <li>Imposible reutilizar herramientas entre clientes diferentes</li>
+                </ul>
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <strong>Solución: Model Context Protocol (MCP)</strong><br>
+                    Protocolo estándar JSON-RPC bidireccional que permite a un Client
+                    (IDE, LLM, etc.) interactuar de forma segura con un Server
+                    que expone datos y herramientas específicas.
+                </div>
+            </section>
+
+            <!-- 2. ¿QUÉ ES MCP? -->
+            <section>
+                <h2>2️⃣ ¿Qué es Model Context Protocol?</h2>
+                <div class="container-flex">
+                    <div>
+                        <h4>📋 Conceptos Clave:</h4>
+                        <ul>
+                            <li><strong>Host:</strong> FastAPI + Dashboard</li>
+                            <li><strong>Client:</strong> MCPClient (solicita tools)</li>
+                            <li><strong>Server:</strong> MCPServer (expone tools)</li>
+                            <li><strong>Tools:</strong> Funciones ejecutables</li>
+                            <li><strong>Resources:</strong> Datos accesibles</li>
+                            <li><strong>Prompts:</strong> Plantillas reutilizables</li>
+                        </ul>
+                    </div>
+                    <div style="text-align: center;">
+                        <pre style="background: #222; padding: 15px; border-radius: 5px; font-size: 0.8em;">
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "generar_casos_prueba",
+    "arguments": {...}
+  }
+}
+                        </pre>
+                        <p style="font-size: 0.8em; margin-top: 10px;">JSON-RPC 2.0</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. ARQUITECTURA DEL PROYECTO -->
+            <section>
+                <h2>3️⃣ Arquitectura de la Solución</h2>
+                <h4 style="margin-top: 30px; color: #42ff42;">Arquitectura Hexagonal (Puertos y Adaptadores)</h4>
+                <div style="text-align: center;">
+                    <pre style="background: #222; padding: 20px; border-radius: 5px; font-size: 0.75em; text-align: left; margin: auto; max-width: 600px;">
+Browser (Dashboard)
+        ↓
+   FastAPI Controller
+        ↓
+   Caso de Uso
+        ↓
+   Puerto del Dominio
+        ↓
+   Adaptador MCP
+        ↓
+   MCP Client
+        ↓
+   MCP Server
+        ↓
+   Tool MCP
+                    </pre>
+                </div>
+                <p style="margin-top: 20px; font-size: 0.9em;">
+                    <strong>Ventaja:</strong> Los casos de uso NO conocen MCP ni FastAPI.
+                    Solo dependen de puertos. Esto permite cambiar la implementación sin afectar la lógica.
+                </p>
+            </section>
+
+            <!-- 4. CAPAS DE LA ARQUITECTURA -->
+            <section>
+                <h2>4️⃣ Capas de Arquitectura</h2>
+                <table style="font-size: 0.9em; width: 100%;">
+                    <tr>
+                        <td style="background: #667eea; padding: 10px; border-radius: 3px;"><strong>🌐 Web</strong></td>
+                        <td>FastAPI, Controllers, Dashboard</td>
+                    </tr>
+                    <tr style="margin-top: 10px;">
+                        <td style="background: #764ba2; padding: 10px; border-radius: 3px;"><strong>⚙️ Application</strong></td>
+                        <td>Casos de Uso, Orquestación</td>
+                    </tr>
+                    <tr>
+                        <td style="background: #8b5cf6; padding: 10px; border-radius: 3px;"><strong>💼 Domain</strong></td>
+                        <td>Entidades, Puertos (contratos)</td>
+                    </tr>
+                    <tr>
+                        <td style="background: #a78bfa; padding: 10px; border-radius: 3px;"><strong>🔧 Infrastructure</strong></td>
+                        <td>MCP Server/Client, Adapters</td>
+                    </tr>
+                </table>
+                <p style="margin-top: 30px; font-size: 0.9em; color: #ffaa00;">
+                    ⚡ <strong>Regla de Oro:</strong> Las dependencias apuntan hacia adentro.
+                    El Domain nunca conoce la Infrastructure.
+                </p>
+            </section>
+
+            <!-- 5. ESTRUCTURA DE CARPETAS -->
+            <section>
+                <h2>5️⃣ Estructura del Proyecto</h2>
+                <pre style="background: #222; padding: 15px; border-radius: 5px; font-size: 0.65em;">
+qa-copilot-mcp/
+├── src/
+│   ├── domain/              # Entidades y Puertos
+│   ├── application/         # Casos de Uso
+│   ├── infrastructure/
+│   │   ├── mcp/            # Client, Server, Tools
+│   │   └── web/            # FastAPI Controllers
+│   └── main.py
+├── tests/                   # Pruebas unitarias
+├── docs/                    # Documentación
+└── README.md
+                </pre>
+            </section>
+
+            <!-- 6. LOS 4 PUERTOS DEL DOMINIO -->
+            <section>
+                <h2>6️⃣ Puertos (Contratos del Dominio)</h2>
+                <ul>
+                    <li><strong>TestingAnalysisPort:</strong> Genera casos de prueba</li>
+                    <li><strong>AcceptanceCriteriaPort:</strong> Genera criterios BDD (Given/When/Then)</li>
+                    <li><strong>RiskAnalysisPort:</strong> Analiza riesgos (funcionales, seguridad)</li>
+                    <li><strong>EffortEstimationPort:</strong> Estima esfuerzo QA</li>
+                </ul>
+                <div class="highlight-box" style="margin-top: 30px;">
+                    <strong>¿Por qué Puertos?</strong><br>
+                    Permiten reemplazar la implementación (MCP, API, Base de Datos) sin cambiar los casos de uso.
+                    La inversión de dependencias es la clave de una arquitectura flexible.
+                </div>
+            </section>
+
+            <!-- 7. LAS 4 HERRAMIENTAS MCP -->
+            <section>
+                <h2>7️⃣ Herramientas MCP (Tools)</h2>
+                <table style="font-size: 0.85em; width: 100%;">
+                    <tr>
+                        <td style="background: #667eea; padding: 8px;"><strong>Tool</strong></td>
+                        <td style="background: #667eea; padding: 8px;"><strong>Input</strong></td>
+                        <td style="background: #667eea; padding: 8px;"><strong>Output</strong></td>
+                    </tr>
+                    <tr>
+                        <td>generar_casos_prueba</td>
+                        <td>JiraTicket</td>
+                        <td>Test Cases (positivos, negativos, borde)</td>
+                    </tr>
+                    <tr style="background: #222;">
+                        <td>generar_criterios_aceptacion</td>
+                        <td>JiraTicket</td>
+                        <td>Given/When/Then structure</td>
+                    </tr>
+                    <tr>
+                        <td>analizar_riesgos</td>
+                        <td>JiraTicket</td>
+                        <td>Riesgos funcionales, seguridad, integración</td>
+                    </tr>
+                    <tr style="background: #222;">
+                        <td>estimar_esfuerzo_qa</td>
+                        <td>JiraTicket</td>
+                        <td>Nivel (Alto, Medio, Bajo)</td>
+                    </tr>
+                </table>
+            </section>
+
+            <!-- 8. FLUJO DETALLADO -->
+            <section>
+                <h2>8️⃣ Flujo de Ejecución Paso a Paso</h2>
+                <ol style="font-size: 0.9em;">
+                    <li>Usuario llena formulario en Dashboard web</li>
+                    <li>JavaScript envía POST a `/testing` (o similar)</li>
+                    <li>FastAPI Controller recibe el request</li>
+                    <li>Controller crea entidad `JiraTicket`</li>
+                    <li>Controller llama al Caso de Uso correspondiente</li>
+                    <li>Caso de Uso llama al Puerto</li>
+                    <li>Adaptador MCP implementa el Puerto</li>
+                    <li>Adaptador usa `MCPClient.execute_tool()`</li>
+                    <li>MCPServer ejecuta la tool registrada</li>
+                    <li>Tool retorna resultado estructurado</li>
+                    <li>Resultado viaja de vuelta al Dashboard como JSON</li>
+                    <li>Usuario ve los artefactos QA generados</li>
+                </ol>
+            </section>
+
+            <!-- 9. ENDPOINTS API -->
+            <section>
+                <h2>9️⃣ Endpoints API REST</h2>
+                <div style="font-size: 0.85em;">
+                    <p><strong>POST /testing</strong> → Genera casos de prueba</p>
+                    <p><strong>POST /criteria</strong> → Genera criterios BDD</p>
+                    <p><strong>POST /risks</strong> → Analiza riesgos</p>
+                    <p><strong>POST /effort</strong> → Estima esfuerzo</p>
+                </div>
+                <pre style="background: #222; padding: 15px; border-radius: 5px; font-size: 0.7em; margin-top: 20px;">
+Todos reciben:
+{
+  "titulo": "Agregar autenticación con Google",
+  "descripcion": "Los usuarios deben poder iniciar sesión...",
+  "tipo": "Story"
+}
+
+Responden con JSON estructurado (DTOs)
+                </pre>
+            </section>
+
+            <!-- 10. MODOS DE EJECUCIÓN -->
+            <section>
+                <h2>🔟 Modos de Ejecución</h2>
+                <h4 style="color: #42ff42; margin-top: 30px;">Modo Simulado (Predeterminado)</h4>
+                <p>Servidor MCP en memoria, sin dependencias externas</p>
+                <pre style="background: #222; padding: 10px; font-size: 0.8em;">
+uvicorn src.main:app --reload
+                </pre>
+                <h4 style="color: #42ff42; margin-top: 30px;">Modo MCP Oficial (Stdio)</h4>
+                <p>Usa SDK oficial de MCP</p>
+                <pre style="background: #222; padding: 10px; font-size: 0.8em;">
+$env:QA_COPILOT_MCP_MODE="stdio"
+uvicorn src.main:app --reload
+                </pre>
+            </section>
+
+            <!-- 11. CÓMO INSTALAR Y EJECUTAR -->
+            <section>
+                <h2>1️⃣1️⃣ Instalación (Windows PowerShell)</h2>
+                <pre style="background: #222; padding: 15px; border-radius: 5px; font-size: 0.75em;">
+# 1. Clonar repositorio
+git clone &lt;URL&gt;
+cd qa-copilot-mcp
+
+# 2. Crear entorno virtual
+python -m venv .venv
+
+# 3. Activar entorno
+.\.venv\Scripts\Activate.ps1
+
+# 4. Instalar dependencias
+pip install -r requirements.txt
+
+# 5. Ejecutar aplicación
+uvicorn src.main:app --reload
+
+# 6. Abrir navegador
+http://127.0.0.1:8000
+                </pre>
+            </section>
+
+            <!-- 12. CÓMO INSTALAR Y EJECUTAR (LINUX) -->
+            <section>
+                <h2>1️⃣2️⃣ Instalación (Linux/macOS)</h2>
+                <pre style="background: #222; padding: 15px; border-radius: 5px; font-size: 0.75em;">
+# 1. Clonar repositorio
+git clone &lt;URL&gt;
+cd qa-copilot-mcp
+
+# 2. Crear entorno virtual
+python3 -m venv .venv
+
+# 3. Activar entorno
+source .venv/bin/activate
+
+# 4. Instalar dependencias
+pip install -r requirements.txt
+
+# 5. Ejecutar aplicación
+uvicorn src.main:app --reload
+
+# 6. Abrir navegador
+http://127.0.0.1:8000
+                </pre>
+            </section>
+
+            <!-- 13. EJECUTAR PRUEBAS -->
+            <section>
+                <h2>1️⃣3️⃣ Ejecutar Pruebas</h2>
+                <pre style="background: #222; padding: 15px; border-radius: 5px; font-size: 0.85em;">
+# Todas las pruebas
+pytest
+
+# Con verbosidad
+pytest -v
+
+# Un archivo específico
+pytest tests/test_api.py -v
+
+# Una prueba específica
+pytest tests/test_api.py::test_effort_endpoint -v
+
+# Ver cobertura
+pytest --cov=src
+                </pre>
+                <p style="margin-top: 20px; color: #42ff42;">✅ Todas las pruebas deben pasar</p>
+            </section>
+
+            <!-- 14. EJEMPLO DE USO -->
+            <section>
+                <h2>1️⃣4️⃣ Ejemplo de Uso</h2>
+                <pre style="background: #222; padding: 15px; border-radius: 5px; font-size: 0.7em;">
+curl -X POST http://localhost:8000/testing \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Agregar autenticación con Google",
+    "descripcion": "Los usuarios deben poder iniciar sesión...",
+    "tipo": "Story"
+  }'
+
+RESPUESTA:
+{
+  "titulo": "Agregar autenticación con Google",
+  "casos": [
+    {
+      "tipo": "positivo",
+      "descripcion": "Usuario inicia sesión exitosamente",
+      "pasos": [...]
+    }
+  ]
+}
+                </pre>
+            </section>
+
+            <!-- 15. VENTAJAS DE MCP -->
+            <section>
+                <h2>1️⃣5️⃣ Ventajas de MCP vs APIs Tradicionales</h2>
+                <table style="font-size: 0.85em; width: 100%;">
+                    <tr style="background: #667eea;">
+                        <td><strong>Aspecto</strong></td>
+                        <td><strong>APIs Tradicionales</strong></td>
+                        <td><strong>MCP</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Estandarización</td>
+                        <td>Cada API define su estándar</td>
+                        <td style="color: #42ff42;">Protocolo unificado JSON-RPC</td>
+                    </tr>
+                    <tr style="background: #222;">
+                        <td>Tipado Estricto</td>
+                        <td>Depende del framework</td>
+                        <td style="color: #42ff42;">Esquemas JSON bien definidos</td>
+                    </tr>
+                    <tr>
+                        <td>Seguridad</td>
+                        <td>Sin restricciones implícitas</td>
+                        <td style="color: #42ff42;">Límites claros definidos</td>
+                    </tr>
+                    <tr style="background: #222;">
+                        <td>Documentación</td>
+                        <td>Manual por cada API</td>
+                        <td style="color: #42ff42;">Auto-descubierta con list_tools</td>
+                    </tr>
+                </table>
+            </section>
+
+            <!-- 16. TECNOLOGÍAS UTILIZADAS -->
+            <section>
+                <h2>1️⃣6️⃣ Stack Tecnológico</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.9em;">
+                    <div>
+                        <p><strong>Backend</strong></p>
+                        <ul>
+                            <li>Python 3.11+</li>
+                            <li>FastAPI 0.115+</li>
+                            <li>Uvicorn 0.30+</li>
+                            <li>MCP SDK 1.16+</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p><strong>Validación &amp; Testing</strong></p>
+                        <ul>
+                            <li>Pydantic 2.8+</li>
+                            <li>pytest 8.0+</li>
+                            <li>httpx 0.27+</li>
+                            <li>Jinja2 3.1+</li>
+                        </ul>
+                    </div>
+                </div>
+                <p style="margin-top: 30px; color: #ffaa00;"><strong>Total:</strong> 7 dependencias externas</p>
+            </section>
+
+            <!-- 17. RESULTADOS Y VALIDACIÓN -->
+            <section>
+                <h2>1️⃣7️⃣ Validación del Proyecto</h2>
+                <ul>
+                    <li><span class="success">✅</span> Arquitectura Hexagonal impecable</li>
+                    <li><span class="success">✅</span> 4 Tools MCP funcionales</li>
+                    <li><span class="success">✅</span> API REST con 4 endpoints</li>
+                    <li><span class="success">✅</span> Dashboard web interactivo</li>
+                    <li><span class="success">✅</span> 3 archivos de pruebas (>80% cobertura)</li>
+                    <li><span class="success">✅</span> Documentación completa</li>
+                    <li><span class="success">✅</span> Código limpio y bien estructurado</li>
+                </ul>
+                <p style="margin-top: 30px; color: #42ff42; font-size: 1.2em;">
+                    <strong>Estado: 86/100 puntos (EXCELENTE)</strong>
+                </p>
+            </section>
+
+            <!-- 18. LECCIONES APRENDIDAS -->
+            <section>
+                <h2>1️⃣8️⃣ Lecciones Aprendidas</h2>
+                <h4 style="color: #42ff42; margin-top: 20px;">✅ Qué Funcionó Bien</h4>
+                <ul>
+                    <li>Arquitectura Hexagonal proporciona máxima flexibilidad</li>
+                    <li>Uso de Puertos permite cambiar implementación fácilmente</li>
+                    <li>MCP simplifica la integración LLM-herramientas</li>
+                    <li>Separación de responsabilidades mejora testabilidad</li>
+                </ul>
+                <h4 style="color: #ffaa00; margin-top: 30px;">⚡ Retos Técnicos</h4>
+                <ul>
+                    <li>Manejo de procesos stdio requiere cuidado</li>
+                    <li>Error handling en comunicación cliente-servidor es crítico</li>
+                    <li>Testing de sistemas distribuidos es complejo</li>
+                </ul>
+            </section>
+
+            <!-- 19. CONCLUSIONES -->
+            <section>
+                <h2>1️⃣9️⃣ Conclusiones</h2>
+                <div class="highlight-box" style="margin: 30px 0;">
+                    <h4>MCP es revolucionario porque:</h4>
+                    <ul style="margin: 15px 0;">
+                        <li>🎯 <strong>Estandarización:</strong> Un protocolo para todos</li>
+                        <li>🔒 <strong>Seguridad:</strong> Límites claros entre cliente-servidor</li>
+                        <li>📚 <strong>Reutilización:</strong> Tools usables por cualquier cliente</li>
+                        <li>🚀 <strong>Escalabilidad:</strong> Arquitectura desacoplada</li>
+                    </ul>
+                </div>
+                <p style="margin-top: 30px; font-size: 1em;">
+                    <strong>El futuro de la integración LLM con herramientas pasa por MCP.</strong>
+                </p>
+            </section>
+
+            <!-- 20. DEMOSTRACIÓN EN VIVO -->
+            <section>
+                <h2>2️⃣0️⃣ Demostración en Vivo</h2>
+                <div class="highlight-box" style="margin: 40px 0;">
+                    <h4>Ahora veremos la aplicación en acción:</h4>
+                    <ol>
+                        <li>Iniciar la aplicación (uvicorn)</li>
+                        <li>Acceder al dashboard</li>
+                        <li>Llenar formulario con un ticket</li>
+                        <li>Solicitar análisis (casos de prueba, criterios, riesgos, esfuerzo)</li>
+                        <li>Ver cómo MCP ejecuta las tools y retorna resultados</li>
+                    </ol>
+                </div>
+                <p style="text-align: center; color: #ffaa00; margin-top: 30px;">
+                    📹 <strong>[Ver Video de Demostración]</strong>
+                </p>
+            </section>
+
+            <!-- 21. RECURSOS Y REFERENCIAS -->
+            <section>
+                <h2>2️⃣1️⃣ Recursos y Referencias</h2>
+                <p><strong>📖 Documentación Oficial</strong></p>
+                <ul>
+                    <li>MCP Specification: https://modelcontextprotocol.io</li>
+                    <li>MCP SDK Python: https://github.com/anthropics/python-sdk</li>
+                    <li>FastAPI: https://fastapi.tiangolo.com</li>
+                    <li>Pydantic: https://docs.pydantic.dev</li>
+                </ul>
+                <p style="margin-top: 30px;"><strong>📂 En este Repositorio</strong></p>
+                <ul>
+                    <li>README.md - Documentación completa</li>
+                    <li>docs/arquitectura.md - Diagramas detallados</li>
+                    <li>tests/ - Suite de pruebas</li>
+                    <li>src/ - Código fuente estructurado</li>
+                </ul>
+            </section>
+
+            <!-- 22. PREGUNTAS Y RESPUESTAS -->
+            <section class="title-slide">
+                <h1>❓ Preguntas</h1>
+                <h3 style="margin-top: 60px;">¿Alguna pregunta sobre MCP, Arquitectura o el proyecto?</h3>
+                <p style="margin-top: 100px; color: #ddd;">
+                    Disponible para discutir implementación, diseño, ventajas/limitaciones
+                </p>
+            </section>
+
+            <!-- 23. GRACIAS -->
+            <section class="title-slide">
+                <h1>✨ ¡Gracias!</h1>
+                <h3 style="margin-top: 40px;">QA Copilot MCP</h3>
+                <p style="margin-top: 60px;">
+                    <strong>Repositorio:</strong><br>
+                    <code style="font-size: 0.9em;">https://github.com/usuario/qa-copilot-mcp</code>
+                </p>
+                <p style="margin-top: 40px; font-size: 0.9em; color: #ddd;">
+                    Ingeniería de Software II | Model Context Protocol<br>
+                    Junio 2026
+                </p>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            transition: 'slide',
+            transitionSpeed: 'default',
+            slideNumber: 'c/t',
+            center: false,
+            controls: true,
+            progress: true,
+            embedded: false,
+            keyboard: true,
+            touch: true,
+            overview: true,
+            totalTime: 480000, // 8 minutos en milisegundos
+        });
+    </script>
+</body>
+</html>
